@@ -28,7 +28,7 @@ class ProductController extends BaseController
         $data = $request->all();
         $image = $request->file('image');
         $product = $this->productRepository->create($data, $image);
-        return $this->sendResponse(new ProductResource($product), 'Product created successfully.', 201);
+        return $this->sendResponse($product, 'Product created successfully.', 201);
     }
 
     public function show($id)
@@ -50,7 +50,7 @@ class ProductController extends BaseController
         $data = $request->all();
         $image = $request->file('image');
         $product = $this->productRepository->update($id, $data, $image);
-        return $this->sendResponse(new ProductResource($product), 'Product updated successfully.');
+        return $this->sendResponse($product, 'Product updated successfully.');
     }
 
     public function destroy($id)

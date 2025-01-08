@@ -26,7 +26,7 @@ class CategoryController extends BaseController
                 ['name' => $request->name],
                 $request->file('image')
             );
-            return $this->sendResponse(new CategoryResource($category), 'Category created successfully.');
+            return $this->sendResponse($category, 'Category created successfully.', 201);
         }
         return $this->sendError('Image is required.');
     }
@@ -59,7 +59,7 @@ class CategoryController extends BaseController
             $request->hasFile('image') ? $request->file('image') : null
         );
 
-        return $this->sendResponse(new CategoryResource($category), 'Category updated successfully.');
+        return $this->sendResponse($category, 'Category updated successfully.');
     }
 
     public function destroy($id)

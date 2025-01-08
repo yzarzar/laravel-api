@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
+use App\Http\Resources\UserResource;
 
 class AuthController extends BaseController
 {
@@ -52,7 +53,20 @@ class AuthController extends BaseController
     {
         $success = JWTAuth::user();
 
-        return $this->sendResponse($success, 'User profile retrieved successfully.');
+        return $this->sendResponse(new UserResource($success), 'User profile retrieved successfully.');
+    }
+
+    /**
+     * Update the authenticated User.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function update(UpdateUserRequest $request)
+    {
+        $user = JWTAuth::user();
+        $user->update($request->all());
+
+        return $this->sendResponse($user, 'User updated successfully.');
     }
 
     /**
@@ -65,6 +79,39 @@ class AuthController extends BaseController
         JWTAuth::invalidate(JWTAuth::getToken());
 
         return $this->sendResponse([], 'Successfully logged out.');
+    }
+
+    /**
+     * Get all users.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function users()
+    {
+        $users = User::all();
+
+        return $this->sendResponse(UserResource::collection($users), 'Users retrieved successfully.');
+    }
+
+
+    public function delete($id)
+    {
+        $user = User::find($id);
+        if (!$user) {
+            return $this->sendError('User not found.', 404);
+        }
+
+        $user->delete();
+        return $this->sendResponse([], 'User deleted successfully.');
+    }
+
+    public function show($id)
+    {
+        $user = User::find($id);
+        if (!$user) {
+            return $this->sendError('User not found.', 404);
+        }
+        return $this->sendResponse(new UserResource($user), 'User retrieved successfully.');
     }
 
      /**

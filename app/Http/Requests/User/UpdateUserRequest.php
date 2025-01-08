@@ -25,7 +25,7 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|string|email|max:255|unique:users,email,' . $this->user,
+            'email' => 'sometimes|string|email|max:255' . $this->user,
             'password' => 'nullable|string|min:8|confirmed',
         ];
     }
