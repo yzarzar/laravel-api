@@ -20,6 +20,8 @@ Route::post('/auth/login', [AuthController::class, 'login']);
 
 Route::group(['middleware' => 'auth:api'], function () {
 
+    Route::post('/auth/register', [AuthController::class, 'register']);
+
     // Category
     Route::post('/category', [CategoryController::class, 'store']);
     Route::get('/categories', [CategoryController::class, 'index']);
