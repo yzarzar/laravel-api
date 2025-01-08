@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
@@ -19,8 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/auth/login', [AuthController::class, 'login']);
 
 Route::group(['middleware' => 'auth:api'], function () {
-    Route::post('/auth/register', [AuthController::class, 'register']);
-    
+
     // Category
     Route::post('/category', [CategoryController::class, 'store']);
     Route::get('/categories', [CategoryController::class, 'index']);

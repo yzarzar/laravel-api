@@ -2,28 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\API\BaseController;
+use App\Http\Controllers\BaseController;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\Category\CreateCategoryRequest;
+use App\Http\Requests\Category\UpdateCategoryRequest;
 
 class CategoryController extends BaseController
 {
-    public function store(Request $request)
+    public function store(CreateCategoryRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'image' => 'required|image',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->sendError('Validation Error.', $validator->errors(), 422);
-        }
-
         if ($request->hasFile('image')) {
             $imageName = time().'.'.$request->image->extension();
-
             $request->image->move(public_path('images'), $imageName);
 
             $category = Category::create([
@@ -33,6 +23,7 @@ class CategoryController extends BaseController
 
             return $this->sendResponse($category, 'Category created successfully.', 201);
         }
+        return $this->sendError('Image file is required.', [], 422);
     }
 
     public function index()
@@ -57,36 +48,27 @@ class CategoryController extends BaseController
         return $this->sendResponse($category, 'Category retrieved successfully.');
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateCategoryRequest $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'string',
-            'image' => 'image',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->sendError('Validation Error.', $validator->errors(), 422);
-        }
-
         $category = Category::find($id);
 
         if (!$category) {
             return $this->sendError('Category not found.', 404);
         }
 
-        if (file_exists(public_path('images/'.$category->image))) {
-            unlink(public_path('images/'.$category->image));
-        }
-
         if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($category->image && file_exists(public_path('images/'.$category->image))) {
+                unlink(public_path('images/'.$category->image));
+            }
+
             $imageName = time().'.'.$request->image->extension();
-
             $request->image->move(public_path('images'), $imageName);
-
             $category->image = $imageName;
         }
 
-        $category->update($request->all());
+        $category->fill($request->only(['name']));
+        $category->save();
 
         return $this->sendResponse($category, 'Category updated successfully.');
     }
@@ -97,6 +79,10 @@ class CategoryController extends BaseController
 
         if (!$category) {
             return $this->sendError('Category not found.', 404);
+        }
+
+        if ($category->image && file_exists(public_path('images/'.$category->image))) {
+            unlink(public_path('images/'.$category->image));
         }
 
         $category->delete();

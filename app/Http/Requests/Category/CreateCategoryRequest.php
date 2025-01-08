@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Requests\User;
+namespace App\Http\Requests\Category;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Contracts\Validation\Validator;
 
-class CreateUserRequest extends FormRequest
+class CreateCategoryRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,10 +24,8 @@ class CreateUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-            'password_confirmation' => 'required|string|min:8',
+            'name' => 'required|string|max:255|unique:categories,name',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ];
     }
 
@@ -39,14 +37,11 @@ class CreateUserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'The name is required',
-            'email.required' => 'The email address is required',
-            'email.email' => 'The email address must be valid',
-            'email.unique' => 'This email address already exists',
-            'password.required' => 'The password is required',
-            'password.min' => 'The password must be at least 8 characters',
-            'password.confirmed' => 'The password confirmation does not match',
-            'password.required' => 'The password confirmation is required',
+            'name.required' => 'The category name is required',
+            'name.unique' => 'This category name already exists',
+            'image.image' => 'The file must be an image',
+            'image.mimes' => 'The image must be a file of type: jpeg, png, jpg, gif',
+            'image.max' => 'The image must not be larger than 2MB',
         ];
     }
 

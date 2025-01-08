@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\API\BaseController;
+use App\Http\Controllers\BaseController;
+use App\Http\Requests\Product\CreateProductRequest;
+use App\Http\Requests\Product\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -22,16 +24,9 @@ class ProductController extends BaseController
         return $this->sendResponse($products, 'Products retrieved successfully.');
     }
 
-    public function store(Request $request)
+    public function store(CreateProductRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price' => 'required|numeric|min:0',
-            'category_id' => 'required|exists:categories,id'
-        ]);
-
-        $product = Product::create($validated);
+        $product = Product::create($request->all());
         return $this->sendResponse($product, 'Product created successfully.', 201);
     }
 
@@ -48,22 +43,15 @@ class ProductController extends BaseController
         return $this->sendResponse($product, 'Product retrieved successfully.');
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateProductRequest $request, $id)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price' => 'required|numeric|min:0',
-            'category_id' => 'required|exists:categories,id'
-        ]);
-
         $product = Product::find($id);
 
         if (!$product) {
             return $this->sendError('Product not found.', 404);
         }
 
-        $product->update($validated);
+        $product->update($request->all());
         return $this->sendResponse($product, 'Product updated successfully.');
     }
 
