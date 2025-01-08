@@ -6,6 +6,7 @@ use App\Http\Controllers\BaseController;
 use App\Http\Resources\CategoryResource;
 use App\Http\Requests\Category\CreateCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
+use App\Http\Resources\ProductResource;
 use App\Repositories\Category\CategoryRepositoryInterface;
 use App\Models\Category;
 
@@ -57,7 +58,7 @@ class CategoryController extends BaseController
             ['name' => $request->name],
             $request->hasFile('image') ? $request->file('image') : null
         );
-        
+
         return $this->sendResponse(new CategoryResource($category), 'Category updated successfully.');
     }
 
@@ -74,5 +75,22 @@ class CategoryController extends BaseController
 
         $this->categoryRepository->delete($id);
         return $this->sendResponse([], 'Category deleted successfully.');
+    }
+
+    /**
+     * Display a listing of the products for a specific category.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function indexProducts($id)
+    {
+        $category = Category::with('products')->find($id);
+
+        if (!$category) {
+            return $this->sendError('Category not found.', 404);
+        }
+
+        return $this->sendResponse(ProductResource::collection($category->products), 'Products retrieved successfully.');
     }
 }

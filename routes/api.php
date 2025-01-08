@@ -12,10 +12,10 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('/auth/register', [AuthController::class, 'register']);
 
     // Category
-    Route::apiResource('/category', CategoryController::class, ['only' => ['index', 'store', 'show']]);
-    Route::apiResource('/category/{id}', CategoryController::class, ['only' => ['show', 'update', 'destroy']]);
+    Route::apiResource('/category', CategoryController::class);
+    Route::get('/category/{id}/products', [CategoryController::class, 'indexProducts']);
 
     // Product
-    Route::apiResource('/product', ProductController::class, ['only' => ['index', 'store', 'show']]);
-    Route::apiResource('/product/{id}', ProductController::class, ['only' => ['show', 'update', 'destroy']]);
+    Route::apiResource('/product', ProductController::class);
+    Route::apiResource('/product/{id}', ProductController::class);
 });
