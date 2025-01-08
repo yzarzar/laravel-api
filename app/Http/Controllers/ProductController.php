@@ -6,64 +6,61 @@ use App\Http\Controllers\BaseController;
 use App\Http\Requests\Product\CreateProductRequest;
 use App\Http\Requests\Product\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
-use App\Models\Product;
-use Illuminate\Http\Request;
+use App\Repositories\Product\ProductRepositoryInterface;
 
 class ProductController extends BaseController
 {
+    protected $productRepository;
+
+    public function __construct(ProductRepositoryInterface $productRepository)
+    {
+        $this->productRepository = $productRepository;
+    }
+
     public function index()
     {
-        $products = Product::with('category')->get();
-
-        if (!$products) {
-            return $this->sendError('Products not found.', 404);
-        }
-
-        $products = ProductResource::collection($products);
-
-        return $this->sendResponse($products, 'Products retrieved successfully.');
+        $products = $this->productRepository->all();
+        return $this->sendResponse(ProductResource::collection($products), 'Products retrieved successfully.');
     }
 
     public function store(CreateProductRequest $request)
     {
-        $product = Product::create($request->all());
-        return $this->sendResponse($product, 'Product created successfully.', 201);
+        $data = $request->all();
+        $image = $request->file('image');
+        $product = $this->productRepository->create($data, $image);
+        return $this->sendResponse(new ProductResource($product), 'Product created successfully.', 201);
     }
 
     public function show($id)
     {
-        $product = Product::with('category')->find($id);
-
+        $product = $this->productRepository->find($id);
         if (!$product) {
             return $this->sendError('Product not found.', 404);
         }
-
-        $product = new ProductResource($product);
-
-        return $this->sendResponse($product, 'Product retrieved successfully.');
+        return $this->sendResponse(new ProductResource($product), 'Product retrieved successfully.');
     }
 
     public function update(UpdateProductRequest $request, $id)
     {
-        $product = Product::find($id);
-
+        $product = $this->productRepository->find($id);
         if (!$product) {
             return $this->sendError('Product not found.', 404);
         }
 
-        $product->update($request->all());
-        return $this->sendResponse($product, 'Product updated successfully.');
+        $data = $request->all();
+        $image = $request->file('image');
+        $product = $this->productRepository->update($id, $data, $image);
+        return $this->sendResponse(new ProductResource($product), 'Product updated successfully.');
     }
 
     public function destroy($id)
     {
-        $product = Product::find($id);
-
+        $product = $this->productRepository->find($id);
         if (!$product) {
             return $this->sendError('Product not found.', 404);
         }
 
-        $product->delete();
+        $this->productRepository->delete($id);
         return $this->sendResponse(null, 'Product deleted successfully.', 204);
     }
 }

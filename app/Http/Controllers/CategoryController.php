@@ -4,89 +4,75 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\BaseController;
 use App\Http\Resources\CategoryResource;
-use App\Models\Category;
 use App\Http\Requests\Category\CreateCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
+use App\Repositories\Category\CategoryRepositoryInterface;
+use App\Models\Category;
 
 class CategoryController extends BaseController
 {
+    protected $categoryRepository;
+
+    public function __construct(CategoryRepositoryInterface $categoryRepository)
+    {
+        $this->categoryRepository = $categoryRepository;
+    }
+
     public function store(CreateCategoryRequest $request)
     {
         if ($request->hasFile('image')) {
-            $imageName = time().'.'.$request->image->extension();
-            $request->image->move(public_path('images'), $imageName);
-
-            $category = Category::create([
-                'name' => $request->name,
-                'image' => $imageName,
-            ]);
-
-            return $this->sendResponse($category, 'Category created successfully.', 201);
+            $category = $this->categoryRepository->create(
+                ['name' => $request->name],
+                $request->file('image')
+            );
+            return $this->sendResponse(new CategoryResource($category), 'Category created successfully.');
         }
-        return $this->sendError('Image file is required.', [], 422);
+        return $this->sendError('Image is required.');
     }
 
     public function index()
     {
-        $categories = Category::all();
-
-        $categories = CategoryResource::collection($categories);
-
-        return $this->sendResponse($categories, 'Categories retrieved successfully.');
+        $categories = $this->categoryRepository->all();
+        return $this->sendResponse(CategoryResource::collection($categories), 'Categories retrieved successfully.');
     }
 
     public function show($id)
     {
-        $category = Category::find($id);
-
+        $category = $this->categoryRepository->find($id);
         if (!$category) {
             return $this->sendError('Category not found.', 404);
         }
-
-        $category = new CategoryResource($category);
-
-        return $this->sendResponse($category, 'Category retrieved successfully.');
+        return $this->sendResponse(new CategoryResource($category), 'Category retrieved successfully.');
     }
 
     public function update(UpdateCategoryRequest $request, $id)
     {
-        $category = Category::find($id);
-
+        $category = $this->categoryRepository->find($id);
         if (!$category) {
             return $this->sendError('Category not found.', 404);
         }
 
-        if ($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($category->image && file_exists(public_path('images/'.$category->image))) {
-                unlink(public_path('images/'.$category->image));
-            }
-
-            $imageName = time().'.'.$request->image->extension();
-            $request->image->move(public_path('images'), $imageName);
-            $category->image = $imageName;
-        }
-
-        $category->fill($request->only(['name']));
-        $category->save();
-
-        return $this->sendResponse($category, 'Category updated successfully.');
+        $category = $this->categoryRepository->update(
+            $id,
+            ['name' => $request->name],
+            $request->hasFile('image') ? $request->file('image') : null
+        );
+        
+        return $this->sendResponse(new CategoryResource($category), 'Category updated successfully.');
     }
 
     public function destroy($id)
     {
-        $category = Category::find($id);
-
+        $category = $this->categoryRepository->find($id);
         if (!$category) {
             return $this->sendError('Category not found.', 404);
         }
 
-        if ($category->image && file_exists(public_path('images/'.$category->image))) {
-            unlink(public_path('images/'.$category->image));
+        if ($category->image) {
+            $this->categoryRepository->deleteImage($category->image);
         }
 
-        $category->delete();
-
-        return $this->sendResponse([], 'Category deleted successfully.', 204);
+        $this->categoryRepository->delete($id);
+        return $this->sendResponse([], 'Category deleted successfully.');
     }
 }

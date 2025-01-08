@@ -26,6 +26,7 @@ class UpdateProductRequest extends FormRequest
         return [
             'name' => 'required|string',
             'description' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'price' => 'required|numeric',
             'category_id' => 'required|exists:categories,id',
         ];
@@ -44,6 +45,9 @@ class UpdateProductRequest extends FormRequest
             'price.required' => 'The product price is required.',
             'category_id.required' => 'The product category is required.',
             'category_id.exists' => 'The selected category does not exist.',
+            'image.image' => 'The file must be an image.',
+            'image.mimes' => 'The image must be a file of type: jpeg, png, jpg, gif.',
+            'image.max' => 'The image must not be larger than 2MB.',
         ];
     }
 
