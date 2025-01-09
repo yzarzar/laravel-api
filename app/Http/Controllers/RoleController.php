@@ -2,26 +2,38 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateRoleRequest;
+use App\Http\Requests\UpdateRoleRequest;
+use App\Http\Resources\RoleResource;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
-class RoleController extends BaseController
+class RoleController extends BaseController implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            'auth:api',
+            new Middleware('permission:role_create', only: ['store']),
+            new Middleware('permission:role_edit', only: ['update']),
+            new Middleware('permission:role_delete', only: ['destroy']),
+            new Middleware('permission:role_show', only: ['show']),
+            new Middleware('permission:role_index', only: ['index']),
+        ];
+    }
+
     public function index()
     {
         $roles = Role::with('permissions')->get();
-        return response()->json(['roles' => $roles]);
+        return response()->json(['roles' => RoleResource::collection($roles)]);
     }
 
-    public function store(Request $request)
+    public function store(CreateRoleRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|unique:roles,name',
-            'permissions' => 'array'
-        ]);
-
         $role = Role::create(['name' => $request->name]);
 
         if ($request->has('permissions')) {
@@ -39,17 +51,12 @@ class RoleController extends BaseController
         if (!$role) {
             return $this->sendError('Role not found.', 404);
         }
-        return $this->sendResponse($role, 'Role retrieved successfully.');
+        return $this->sendResponse(new RoleResource($role), 'Role retrieved successfully.');
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateRoleRequest $request, $id)
     {
         $role = Role::find($id);
-        $request->validate([
-            'name' => 'required|string|unique:roles,name,' . $role->id,
-            'permissions' => 'array'
-        ]);
-
         $role->update(['name' => $request->name]);
 
         if ($request->has('permissions')) {

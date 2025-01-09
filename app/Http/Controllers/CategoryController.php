@@ -8,15 +8,29 @@ use App\Http\Requests\Category\CreateCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
 use App\Http\Resources\ProductResource;
 use App\Repositories\Category\CategoryRepositoryInterface;
+use Illuminate\Routing\Controllers\HasMiddleware;
 use App\Models\Category;
+use Illuminate\Routing\Controllers\Middleware;
 
-class CategoryController extends BaseController
+class CategoryController extends BaseController implements HasMiddleware
 {
     protected $categoryRepository;
+
 
     public function __construct(CategoryRepositoryInterface $categoryRepository)
     {
         $this->categoryRepository = $categoryRepository;
+    }
+
+    public static function middleware(): array
+    {
+        return [
+            'auth:api',
+            new Middleware('permission:category_create', only: ['store']),
+            new Middleware('permission:category_edit', only: ['update']),
+            new Middleware('permission:category_delete', only: ['destroy']),
+            new Middleware('permission:category_show', only: ['show']),
+        ];
     }
 
     public function store(CreateCategoryRequest $request)

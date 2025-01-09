@@ -23,14 +23,28 @@ class RoleAndPermissionSeeder extends Seeder
             'user_edit',
             'user_delete',
             'user_show',
+            'user_index',
             'role_create',
             'role_edit',
             'role_delete',
             'role_show',
+            'role_index',
             'permission_create',
             'permission_edit',
             'permission_delete',
-            'permission_show'
+            'permission_show',
+            'permission_index',
+            'product_create',
+            'product_edit',
+            'product_delete',
+            'product_show',
+            'product_index',
+            'category_create',
+            'category_edit',
+            'category_index',
+            'category_delete',
+            'category_show',
+            'user_login'
         ];
 
         foreach ($permissions as $permission) {
@@ -46,12 +60,14 @@ class RoleAndPermissionSeeder extends Seeder
             'user_show',
             'user_edit',
             'role_show',
-            'permission_show'
+            'permission_show',
+            'user_login'
         ]);
 
         $user = Role::create(['name' => 'user']);
         $user->givePermissionTo([
-            'user_show'
+            'user_show',
+            'user_login'
         ]);
     }
 }

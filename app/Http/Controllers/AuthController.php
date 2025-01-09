@@ -3,15 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\UserResource;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class AuthController extends BaseController
+class AuthController extends BaseController implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('auth:api', except: ['login']),
+            new Middleware('permission:user_create', only: ['register']),
+            new Middleware('permission:user_edit', only: ['update']),
+            new Middleware('permission:user_delete', only: ['delete']),
+            new Middleware('permission:user_show', only: ['show']),
+            new Middleware('permission:user_index', only: ['users']),
+        ];
+    }
+
     /**
      * Register a User.
      *
