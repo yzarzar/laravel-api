@@ -15,11 +15,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::delete('/users/{id}', [AuthController::class, 'delete']);
 
     // Role management routes
-    Route::get('/roles', [RoleController::class, 'index']);
-    Route::post('/roles', [RoleController::class, 'store']);
-    Route::put('/roles/{id}', [RoleController::class, 'update']);
-    Route::delete('/roles/{id}', [RoleController::class, 'destroy']);
-    Route::get('/roles/{id}', [RoleController::class, 'show']);
+    Route::apiResource('/roles', RoleController::class);
     Route::post('users/assign-role', [RoleController::class, 'assignRole']);
     Route::get('/permissions', [RoleController::class, 'permissions']);
 
@@ -38,10 +34,5 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/category/{id}/products', [CategoryController::class, 'indexProducts']);
 
     // Product routes
-    Route::get('/products', [ProductController::class, 'index']);
-    Route::post('/products', [ProductController::class, 'store'])->middleware('permission:product_create');
-    Route::get('/products/{id}', [ProductController::class, 'show']);
-    Route::put('/products/{id}', [ProductController::class, 'update']);
-    Route::delete('/products/{id}', [ProductController::class, 'destroy']);
-
+    Route::apiResource('/products', ProductController::class);
 });
